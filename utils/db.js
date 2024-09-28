@@ -1,15 +1,17 @@
-const mongoose = require('mongoose');
+const mongodb = require('mongodb');
 
 class DBClient {
     constructor() {
         this.db_host = process.env.DB_HOST || 'localhost';
         this.db_port = process.env.DB_PORT || 27017;
         this.db_database = process.env.DB_DATABASE || 'files_manager';
-        this.client = mongoose.client();
+        const dbURL = `mongodb://${host}:${port}/${database}`;
+        this.client = new mongodb.MongoClient(dbURL, { useUnifiedTopology: true });
+        this.client.connect();
     }
 
     isAlive() {
-        return this.client.connected;
+        return this.client.isConnected();
     }
 
     async nbUsers() {
