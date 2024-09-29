@@ -26,7 +26,7 @@ export default class UsersController {
 
   static async getMe(req, res) {
     try {
-      const token = req.headers['x-token'];
+      const token = req.header('X-Token');
       if (!token) return res.status(401).send({ error: 'Unauthorized !token' });
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) return res.status(401).send({ error: 'Unauthorized !userId' });
