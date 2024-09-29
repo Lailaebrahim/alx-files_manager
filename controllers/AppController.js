@@ -13,8 +13,8 @@ export default class AppController {
       .then(([Users, nbFiles]) => {
         res.status(200).json({ users: Users, files: nbFiles });
       })
-    .catch((_error) => {
+      .catch((_error) => {
         res.status(500).json({ error: 'Internal Server Error' });
-    });
+      });
   }
 }

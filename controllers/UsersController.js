@@ -28,14 +28,14 @@ export default class UsersController {
   }
 
   static getMe(req, res) {
-      const token = req.headers.X - Token;
-      if (!token) return res.status(401).send({ error: 'Unauthorized' });
-        redisClient.get(`auth_${token}`, (error, userId) => {
-            if (error || !userId) return res.status(401).send({ error: 'Unauthorized' });
-            dbClient.db.collection('users').findOne({ _id: ObjectId(userId) }, (error, user) => {
-                if (error || !user) return res.status(401).send({ error: 'Unauthorized' });
-                return res.status(200).send({ id: user._id, email: user.email });
-            });
-        });
+    const token = req.headers.X - Token;
+    if (!token) return res.status(401).send({ error: 'Unauthorized' });
+    redisClient.get(`auth_${token}`, (error, userId) => {
+      if (error || !userId) return res.status(401).send({ error: 'Unauthorized' });
+      dbClient.db.collection('users').findOne({ _id: ObjectId(userId) }, (error, user) => {
+        if (error || !user) return res.status(401).send({ error: 'Unauthorized' });
+        return res.status(200).send({ id: user._id, email: user.email });
+      });
+    });
   }
 }
