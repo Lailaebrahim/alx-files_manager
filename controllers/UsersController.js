@@ -7,7 +7,6 @@ export default class UsersController {
     if (!email) return res.status(400).send({ error: 'Missing email' });
     if (!password) return res.status(400).send({ error: 'Missing password' });
     const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
-    const user = { email, password: hashedPassword };
 
     try {
       // check if the email already exists
@@ -17,7 +16,7 @@ export default class UsersController {
       }
 
       // insert the new user
-      const result = await dbClient.db.collection('users').insertOne(user);
+      const result = await dbClient.db.collection('users').insertOne({ email, password: hashedPassword });
       return res.status(201).send({ email, id: result.insertedId });
     } catch (err) {
       if (err.code === 11000) {
