@@ -1,4 +1,4 @@
-import AppController from '../controllers/AppController.js';
+import AppController from '../controllers/AppController';
 
 const apiRoutes = (api) => {
   api.get('/status', AppController.getStatus);
