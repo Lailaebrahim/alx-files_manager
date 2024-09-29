@@ -2,15 +2,32 @@ import crypto from 'crypto';
 import dbClient from '../utils/db.js';
 
 
-export default class UsersController{
-    static postNew(req, res) {
+export default class UsersController {
+    static async postNew(req, res) {
         const { email, password } = req.body;
         if (!email) return res.status(400).send({ error: 'Missing email' });
         if (!password) return res.status(400).send({ error: 'Missing password' });
         const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
-        dbClient.db.collection('users').insertOne({ email, password: hashedPassword }, (error, result) => {
-            if (error) return res.status(400).send({ error: 'Already exist' });
-            return res.status(201).send({ email, password: hashedPassword });
+        const user = { email, password: hashedPassword };
+
+        try {
+            const result = await dbClient.db.collection('users').insertOne(user);
+            return res.status(201).send({ email: email, id: result.insertedId });
+        } catch (err) {
+            if (err.code === 11000) {
+                return res.status(400).send({ error: 'Already exist' });
+            }
+            return res.status(500).send({ error: 'Internal Server Error' });
+        }
+
+    }
+    
+    static getMe(req, res) {
+        const { userId } = req;
+        dbClient.db.collection('users').findOne({ _id: userId }, (error, user) => {
+            if (error || !user) return res.status(404).send({ error: 'User not found' });
+            delete user.password;
+            return res.status(200).send(user);
         });
     }
 }
