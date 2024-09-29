@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
+const { ObjectId } = require('mongodb');
 
 export default class UsersController {
   static async postNew(req, res) {
@@ -30,7 +31,7 @@ export default class UsersController {
       if (!token) return res.status(401).send({ error: 'Unauthorized !token' });
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) return res.status(401).send({ error: 'Unauthorized !userId' });
-      const user = await dbClient.db.collection('users').findOne({ _id: userId });
+      const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(userId)});
       if (!user) return res.status(401).send({ error: 'Unauthorized !user' });
       return res.status(200).send({ id: user._id, email: user.email });
     } catch (err) {
