@@ -10,13 +10,10 @@ export default class UsersController {
     const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
 
     try {
-      // check if the email already exists
       const existingUser = await dbClient.db.collection('users').findOne({ email });
       if (existingUser) {
         return res.status(400).send({ error: 'Already exist' });
       }
-
-      // insert the new user
       const result = await dbClient.db.collection('users').insertOne({ email, password: hashedPassword });
       return res.status(201).send({ email, id: result.insertedId });
     } catch (err) {
