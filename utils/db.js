@@ -25,12 +25,12 @@ class DBClient {
   }
 
   async nbUsers() {
-    const users = await this.db.collection('users').countDocuments({}, { hint: "_id_" }); 
+    const users = await this.db.collection('users').countDocuments({}, { hint: '_id_' });
     return users;
   }
 
   async nbFiles() {
-    const files = await this.db.collection('files').countDocuments({}, { hint: "_id_" });
+    const files = await this.db.collection('files').countDocuments({}, { hint: '_id_' });
     return files;
   }
 }
