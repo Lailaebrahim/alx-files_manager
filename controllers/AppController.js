@@ -2,10 +2,10 @@ const dbClient = require('../utils/db.js');
 const redisClient = require('../utils/redis.js');
 
 export default class AppController {
-    static getStatus(){
+    static getStatus(req, res){
         const redis = redisClient.isAlive();
         const db = dbClient.isAlive();
-        return { "redis": redis, "db": db };
+       res.status(200).json({ "redis": redis, "db": db });
     }
 
     static getStats(req, res) {
