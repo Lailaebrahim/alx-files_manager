@@ -8,6 +8,7 @@ const apiRoutes = (api) => {
   api.post('/users', UsersController.postNew);
   api.get('/connect', AuthController.getConnect);
   api.get('/disconnect', AuthController.getDisconnect);
+  api.get('/users/me', UsersController.getMe);
 };
 
 export default apiRoutes;
