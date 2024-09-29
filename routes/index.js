@@ -10,7 +10,7 @@ const apiRoutes = (api) => {
   api.get('/connect', AuthController.getConnect);
   api.get('/disconnect', AuthController.getDisconnect);
   api.get('/users/me', UsersController.getMe);
-  api.post('/files', FilesController.postUpload);
+  // api.post('/files', FilesController.postUpload);
 };
 
 export default apiRoutes;
