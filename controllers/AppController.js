@@ -9,9 +9,11 @@ export default class AppController {
   }
 
   static getStats(_req, res) {
-    Promise.all([dbClient.nbUsers.countDocuments({}, { hint: "_id_" }), dbClient.nbFiles.countDocuments({}, { hint: "_id_" })])
-      .then(([Users, nbFiles]) => {
-        res.status(200).json({ users: Users, files: nbFiles });
+    const users = dbClient.db.collection('users');
+    const files = dbClient.db.collection('files');
+    Promise.all([users.countDocuments({}, { hint: "_id_" }), files.countDocuments({}, { hint: "_id_" })])
+      .then(([Users, Files]) => {
+        res.status(200).json({ users: Users, files: Files });
       })
       .catch(() => {
         res.status(500).json({ error: 'Internal Server Error' });
