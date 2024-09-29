@@ -7,6 +7,8 @@ class DBClient {
         this.db_database = process.env.DB_DATABASE || 'files_manager';
         const dbURL = `mongodb://${this.db_host}:${this.db_port}/${this.db_database}`;
         this.client = new mongodb.MongoClient(dbURL, { useUnifiedTopology: true });
+        this.client.on('error', (error) => { console.log(`Mongo client not connected to the server: ${error}`); });
+        this.client.on('connect', () => { console.log('Mongo client connected to the server'); });
         this.client.connect();
     }
 
