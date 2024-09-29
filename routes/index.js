@@ -11,3 +11,4 @@ const apiRoutes = (api) => {
 };
 
 export default apiRoutes;
+
