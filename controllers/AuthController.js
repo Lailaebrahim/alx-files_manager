@@ -16,7 +16,8 @@ export default class AuthController {
       const user = await dbClient.db.collection('users').findOne({ email, password: hashedPassword });
       if (!user) return res.status(401).send({ error: 'Unauthorized' });
       const token = uuidv4();
-      redisClient.set(`auth_${token}`, user._id.toString(), 86400);
+      const response = await redisClient.set(`auth_${token}`, user._id.toString(), 86400);
+      if (!response) return res.status(500).send({ error: 'Internal Server Error' });
       return res.status(200).send({ token });
     }
     catch (error) {
