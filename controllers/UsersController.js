@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import dbClient from '../utils/db';
+import redisClient from '../utils/redis';
 
 export default class UsersController {
   static async postNew(req, res) {
@@ -27,11 +28,14 @@ export default class UsersController {
   }
 
   static getMe(req, res) {
-    const { userId } = req;
-    dbClient.db.collection('users').findOne({ _id: userId }, (error, user) => {
-      if (error || !user) return res.status(404).send({ error: 'User not found' });
-      delete user.password;
-      return res.status(200).send(user);
-    });
+      const token = req.headers.X - Token;
+      if (!token) return res.status(401).send({ error: 'Unauthorized' });
+        redisClient.get(`auth_${token}`, (error, userId) => {
+            if (error || !userId) return res.status(401).send({ error: 'Unauthorized' });
+            dbClient.db.collection('users').findOne({ _id: ObjectId(userId) }, (error, user) => {
+                if (error || !user) return res.status(401).send({ error: 'Unauthorized' });
+                return res.status(200).send({ id: user._id, email: user.email });
+            });
+        });
   }
 }
