@@ -22,15 +22,15 @@ export default class FilesController {
       const { name, type, parentId, isPublic, data } = req.body;
       if (!name) return res.status(400).send({ error: 'Missing name' });
       if (!type || !(['folder', 'file', 'image'].includes(type))) return res.status(400).send({ error: 'Missing type' });
-      if (type != "folder" && !data) return res.status(400).send({ error: 'Missing data' });
+      if (type !== "folder" && !data) return res.status(400).send({ error: 'Missing data' });
       if (parentId) {
         const parent = await dbClient.db.collection('files').findOne({ _id: ObjectId(parentId) });
         if (!parent) return res.status(400).send({ error: 'Parent not found' });
-        if (parent.type != 'folder') return res.status(400).send({ error: 'Parent is not a folder' });
+        if (parent.type !== 'folder') return res.status(400).send({ error: 'Parent is not a folder' });
       }
 
       // insert folder in DB
-      if (type == "folder") {
+      if (type === "folder") {
         const folder = {
           userId: user._id,
           name,
