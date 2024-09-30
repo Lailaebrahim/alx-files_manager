@@ -19,8 +19,7 @@ export default class AuthController {
       const response = await redisClient.set(`auth_${token}`, user._id.toString(), 86400);
       if (!response) return res.status(500).send({ error: 'Internal Server Error' });
       return res.status(200).send({ token });
-    }
-    catch (error) {
+    } catch (error) {
       return res.status(500).send({ error: 'Internal Server Error' });
     }
   }
@@ -32,8 +31,7 @@ export default class AuthController {
       const response = await redisClient.del(`auth_${token}`);
       if (response === 1) return res.status(204).send();
       return res.status(401).send({ error: 'Unauthorized' });
-    }
-    catch (error) {
+    } catch (error) {
       return res.status(500).send({ error: 'Internal Server Error' });
     }
   }
