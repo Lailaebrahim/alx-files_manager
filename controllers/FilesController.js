@@ -1,15 +1,14 @@
-import dbClient from '../utils/db';
-import redisClient from '../utils/redis'
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fsPromises } from 'fs';
-import { createDirectory, convertFromBase64 } from '../utils/file';
 import path from 'path';
+import { createDirectory, convertFromBase64 } from '../utils/file';
+import redisClient from '../utils/redis';
+import dbClient from '../utils/db';
 
 export default class FilesController {
   static async postUpload(req, res) {
     try {
-
       // get user based on the token
       const token = req.header('X-Token');
       if (!token) return res.status(401).send({ error: 'Unauthorized' });
@@ -19,10 +18,12 @@ export default class FilesController {
       if (!user) return res.status(401).send({ error: 'Unauthorized' });
 
       // after user authorization validate data
-      const { name, type, parentId, isPublic, data } = req.body;
+      const {
+        name, type, parentId, isPublic, data,
+      } = req.body;
       if (!name) return res.status(400).send({ error: 'Missing name' });
       if (!type || !(['folder', 'file', 'image'].includes(type))) return res.status(400).send({ error: 'Missing type' });
-      if (type != "folder" && !data) return res.status(400).send({ error: 'Missing data' });
+      if (type != 'folder' && !data) return res.status(400).send({ error: 'Missing data' });
       if (parentId) {
         const parent = await dbClient.db.collection('files').findOne({ _id: ObjectId(parentId) });
         if (!parent) return res.status(400).send({ error: 'Parent not found' });
@@ -30,7 +31,7 @@ export default class FilesController {
       }
 
       // insert folder in DB
-      if (type == "folder") {
+      if (type == 'folder') {
         const folder = {
           userId: user._id,
           name,
@@ -45,7 +46,7 @@ export default class FilesController {
           name,
           type,
           isPublic: isPublic || false,
-          parentId: parentId || 0
+          parentId: parentId || 0,
         });
       }
 
@@ -54,7 +55,7 @@ export default class FilesController {
       await createDirectory(dirPath);
 
       // write file to disk
-      const buff = convertFromBase64(data)
+      const buff = convertFromBase64(data);
       const filePath = path.join(dirPath, uuidv4());
       await fsPromises.writeFile(filePath, buff);
       const file = {
@@ -63,7 +64,7 @@ export default class FilesController {
         type,
         isPublic: isPublic || false,
         parentId: parentId || 0,
-        localPath: filePath
+        localPath: filePath,
       };
       const result = await dbClient.db.collection('files').insertOne(file);
       return res.status(201).send({
@@ -72,10 +73,10 @@ export default class FilesController {
         name,
         type,
         isPublic: isPublic || false,
-        parentId: parentId || 0
+        parentId: parentId || 0,
       });
-    } catch (Error){
-      return res.status(500).send({ error: `Internal Server Error: ${Error}`});
+    } catch (Error) {
+      return res.status(500).send({ error: `Internal Server Error: ${Error}` });
     }
   }
 }
