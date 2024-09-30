@@ -29,7 +29,7 @@ export default class FilesController {
       } = req.body;
       if (!name) return res.status(400).send({ error: 'Missing name' });
       if (!type || !(['folder', 'file', 'image'].includes(type))) return res.status(400).send({ error: 'Missing type' });
-      if (type !== "folder" && !data) return res.status(400).send({ error: 'Missing data' });
+      if (type !== 'folder' && !data) return res.status(400).send({ error: 'Missing data' });
       if (parentId) {
         const parent = await dbClient.db.collection('files').findOne({ _id: ObjectId(parentId) });
         if (!parent) return res.status(400).send({ error: 'Parent not found' });
@@ -37,7 +37,7 @@ export default class FilesController {
       }
 
       // insert folder in DB
-      if (type === "folder") {
+      if (type === 'folder') {
         const folder = {
           userId: user._id,
           name,
@@ -69,11 +69,11 @@ export default class FilesController {
         name,
         type,
         isPublic: isPublic || false,
-        parentId: parentId || "0",
+        parentId: parentId || '0',
         localPath: filePath,
       };
       const result = await dbClient.db.collection('files').insertOne(file);
-      if (type === "image") {
+      if (type === 'image') {
         const jobName = `Image thumbnail [${userId}-${fileId}]`;
         fileQueue.add({ userId, fileId, name: jobName });
       }
@@ -83,7 +83,7 @@ export default class FilesController {
         name,
         type,
         isPublic: isPublic || false,
-        parentId: parentId || "0",
+        parentId: parentId || '0',
       });
     } catch (Error) {
       return res.status(500).send({ error: `Internal Server Error: ${Error}` });
@@ -112,7 +112,6 @@ export default class FilesController {
         isPublic: file.isPublic,
         parentId: file.parentId,
       });
-
     } catch (Error) {
       return res.status(404).send({ error: 'Not found' });
     }
@@ -129,18 +128,18 @@ export default class FilesController {
       if (!user) return res.status(401).send({ error: 'Unauthorized' });
 
       // get files based on the user id
-      const parentId = req.query.parentId || "0";
-      const page = req.query.page;
+      const parentId = req.query.parentId || '0';
+      const { page } = req.query;
       const aggregationPipeline = [
         {
           $match: {
             userId,
-            parentId
-          }
+            parentId,
+          },
         }, // Filter documents
-        { $sort: { _id: -1 } },     // Sort documents
-        { $skip: page * 20 },  // Skip for pagination
-        { $limit: 20 },        // Limit results per page
+        { $sort: { _id: -1 } }, // Sort documents
+        { $skip: page * 20 }, // Skip for pagination
+        { $limit: 20 }, // Limit results per page
         {
           $project: {
             _id: 1,
@@ -148,15 +147,14 @@ export default class FilesController {
             name: 1,
             type: 1,
             isPublic: 1,
-            parentId: 1
-          }
-        }
-      ]
+            parentId: 1,
+          },
+        },
+      ];
       const files = await dbClient.db.collection('files').aggregate(aggregationPipeline).toArray().toArray();
       return res.status(200).send({ files });
     } catch (Error) {
       return res.status(500).send({ error: `Internal Server Error: ${Error}` });
     }
   }
-
 }

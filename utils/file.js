@@ -1,11 +1,11 @@
 import fs, { promises as fsPromises } from 'fs';
 
-async function createDirectory(dirPath) {;
+async function createDirectory(dirPath) {
   try {
     if (!fs.existsSync(dirPath)) {
       // With recursive: true: The function will create the entire directory path,
       // including any intermediate directories that do not exist.
-      // Return Value: call returns a Promise that 
+      // Return Value: call returns a Promise that
       // resolves to undefined if the directory already exists or is created successfully,
       // or an object with path and mode properties if the directory is created successfully.n.
       const dir = await fsPromises.mkdir(dirPath, { recursive: true });
