@@ -1,3 +1,5 @@
+/* eslint-disable import/no-named-as-default */
+/* eslint-disable no-unused-vars */
 import crypto from 'crypto';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
