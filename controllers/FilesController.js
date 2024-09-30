@@ -64,7 +64,7 @@ export default class FilesController {
         name,
         type,
         isPublic: isPublic || false,
-        parentId: parentId || 0,
+        parentId: parentId || "0",
         localPath: filePath,
       };
       const result = await dbClient.db.collection('files').insertOne(file);
@@ -74,7 +74,7 @@ export default class FilesController {
         name,
         type,
         isPublic: isPublic || false,
-        parentId: parentId || 0,
+        parentId: parentId || "0",
       });
     } catch (Error) {
       return res.status(500).send({ error: `Internal Server Error: ${Error}` });
