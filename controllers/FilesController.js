@@ -223,36 +223,53 @@ export default class FilesController {
   static async getFile(req, res) {
     try {
       const fileId = req.params.id;
-      // If no file document is linked to the ID passed as parameter, return an error Not found with a status code 404
+      const size = req.query.size || null;
+
+      // Verify file existence
       const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(fileId) });
       if (!file) return res.status(404).send({ error: 'Not found' });
-      // If the type of the file document is folder, return an error A folder doesn't have content with a status code 400
-      if (file.type === "folder") return res.status(400).send({ error: "A folder doesn't have content" });
-      if (file.isPublic) {
-        // If the file is public, return the file
-        const filePath = await fsPromises.realpath(file.localPath);
-        res.setHeader('Content-Type', contentType(file.name) || 'text/plain; charset=utf-8');
-        return res.status(200).sendFile(filePath);
+
+      // Check if the file is a folder
+      if (file.type === "folder") {
+        return res.status(400).send({ error: "A folder doesn't have content" });
       }
-      else {
-        // get user based on the token
+
+      // Determine if user has access to the file
+      if (!file.isPublic) {
         const token = req.header('X-Token');
-        if (!token) return res.status(403).send({ error: 'Forbidden' });
+        if (!token) return res.status(404).send({ error: 'Not found' });
+
         const userId = await redisClient.get(`auth_${token}`);
-        if (!userId) return res.status(403).send({ error: 'Forbidden' });
+        if (!userId) return res.status(404).send({ error: 'Not found' });
+
         const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(userId) });
-        if (!user) return res.status(403).send({ error: 'Forbidden' });
-        if (file.userId !== user._id) return res.status(403).send({ error: 'Forbidden' });
-        // If the file is private and the user is the owner of the file, return the file
-        const filePath = await fsPromises.realpath(file.localPath);
-        res.setHeader('Content-Type', contentType(file.name) || 'text/plain; charset=utf-8');
-        return res.status(200).sendFile(filePath);
+        if (!user || file.userId.toString() !== user._id.toString()) {
+          return res.status(404).send({ error: 'Not found' });
+        }
       }
-    }
-    catch (Error) {
-      return res.status(500).send({ error: `Internal Server Error: ${Error}` });
+
+      // Determine the correct file path based on size
+      let filePath = file.localPath;
+      if (size) {
+        filePath = `${file.localPath}_${size}`;
+      }
+
+      // Verify file exists on disk
+      try {
+        await fsPromises.access(filePath, fsPromises.constants.F_OK);
+      } catch (error) {
+        return res.status(404).send({ error: 'Not found' });
+      }
+
+      // Get the absolute path and set content type
+      const absoluteFilePath = await fsPromises.realpath(filePath);
+      res.setHeader('Content-Type', contentType(file.name) || 'text/plain; charset=utf-8');
+
+      // Send the file
+      return res.status(200).sendFile(absoluteFilePath);
+    } catch (error) {
+      console.error('Error in getFile:', error);
+      return res.status(500).send({ error: 'Internal Server Error' });
     }
   }
-
-
 }
