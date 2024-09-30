@@ -2,11 +2,9 @@ import dbClient from '../utils/db';
 import redisClient from '../utils/redis'
 import { ObjectId } from 'mongodb';
 import { uuid } from 'uuid';
-import fs from 'fs';
 import { promises as fsPromises } from 'fs';
 import { createDirectory, convertFromBase64 } from '../utils/file';
 import path from 'path';
-
 
 export default class FilesController {
   static async postUpload(req, res) {
@@ -76,9 +74,8 @@ export default class FilesController {
         isPublic: isPublic || false,
         parentId: parentId || 0
       });
-      
-    } catch {
-      return res.status(500).send({ error: 'Internal Server Error' });
+    } catch (Error){
+      return res.status(500).send({ error: `Internal Server Error: ${Error}`});
     }
   }
 }
