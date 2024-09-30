@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
+import { tmpdir } from 'os';
 import { createDirectory, convertFromBase64 } from '../utils/file';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
@@ -51,7 +52,7 @@ export default class FilesController {
       }
 
       // create directory if not exist
-      const dirPath = path.join(__dirname, process.env.FOLDER_PATH || '/tmp/files_manager');
+      const dirPath = path.join(tmpdir(), process.env.FOLDER_PATH || '/tmp/files_manager');
       await createDirectory(dirPath);
 
       // write file to disk
