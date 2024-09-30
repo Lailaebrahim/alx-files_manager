@@ -74,9 +74,9 @@ export default class FilesController {
       };
       const result = await dbClient.db.collection('files').insertOne(file);
       if (type === "image") {
-      const jobName = `Image thumbnail [${userId}-${fileId}]`;
-      fileQueue.add({ userId, fileId, name: jobName });
-     }
+        const jobName = `Image thumbnail [${userId}-${fileId}]`;
+        fileQueue.add({ userId, fileId, name: jobName });
+      }
       return res.status(201).send({
         id: result.insertedId,
         userId: user._id,
@@ -89,4 +89,74 @@ export default class FilesController {
       return res.status(500).send({ error: `Internal Server Error: ${Error}` });
     }
   }
+
+  static async getShow(req, res) {
+    try {
+      // get user based on the token
+      const token = req.header('X-Token');
+      if (!token) return res.status(401).send({ error: 'Unauthorized' });
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) return res.status(401).send({ error: 'Unauthorized' });
+      const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(userId) });
+      if (!user) return res.status(401).send({ error: 'Unauthorized' });
+
+      // get file based on the file id and user id
+      const fileId = req.params.id;
+      const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(fileId), userId: ObjectId(user._id) });
+      if (!file) return res.status(404).send({ error: 'Not found' });
+      return res.status(200).send({
+        id: file._id,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: file.isPublic,
+        parentId: file.parentId,
+      });
+
+    } catch (Error) {
+      return res.status(404).send({ error: 'Not found' });
+    }
+  }
+
+  static async getIndex(req, res) {
+    try {
+      // get user based on the token
+      const token = req.header('X-Token');
+      if (!token) return res.status(401).send({ error: 'Unauthorized' });
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) return res.status(401).send({ error: 'Unauthorized' });
+      const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(userId) });
+      if (!user) return res.status(401).send({ error: 'Unauthorized' });
+
+      // get files based on the user id
+      const parentId = req.query.parentId || "0";
+      const page = req.query.page;
+      const aggregationPipeline = [
+        {
+          $match: {
+            userId,
+            parentId
+          }
+        }, // Filter documents
+        { $sort: { _id: -1 } },     // Sort documents
+        { $skip: page * 20 },  // Skip for pagination
+        { $limit: 20 },        // Limit results per page
+        {
+          $project: {
+            _id: 1,
+            userId: 1,
+            name: 1,
+            type: 1,
+            isPublic: 1,
+            parentId: 1
+          }
+        }
+      ]
+      const files = await dbClient.db.collection('files').aggregate(aggregationPipeline).toArray().toArray();
+      return res.status(200).send({ files });
+    } catch (Error) {
+      return res.status(500).send({ error: `Internal Server Error: ${Error}` });
+    }
+  }
+
 }
