@@ -3,9 +3,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
 import { tmpdir } from 'os';
+import Queue from 'bull';
 import { createDirectory, convertFromBase64 } from '../utils/file';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
+
+const fileQueue = new Queue('thumbnail generation');
 
 export default class FilesController {
   static async postUpload(req, res) {
@@ -68,6 +71,10 @@ export default class FilesController {
         localPath: filePath,
       };
       const result = await dbClient.db.collection('files').insertOne(file);
+      if (type === "image") {
+      const jobName = `Image thumbnail [${userId}-${fileId}]`;
+      fileQueue.add({ userId, fileId, name: jobName });
+     }
       return res.status(201).send({
         id: result.insertedId,
         userId: user._id,
