@@ -157,4 +157,67 @@ export default class FilesController {
       return res.status(500).send({ error: `Internal Server Error: ${Error}` });
     }
   }
+
+  static async putPublish(req, res) {
+    try {
+      // get user based on the token
+      const token = req.header('X-Token');
+      if (!token) return res.status(401).send({ error: 'Unauthorized' });
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) return res.status(401).send({ error: 'Unauthorized' });
+      const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(userId) });
+      if (!user) return res.status(401).send({ error: 'Unauthorized' });
+
+      // get file based on the file id and user id
+      const fileId = req.params.id;
+      const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(fileId), userId: ObjectId(user._id) });
+      if (!file) return res.status(404).send({ error: 'Not found' });
+
+      // update file to be public
+      await dbClient.db.collection('files').updateOne({ _id: ObjectId(fileId) }, { $set: { isPublic: true } });
+      return res.status(200).send({
+        id: file._id,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: true,
+        parentId: file.parentId,
+      });
+    }
+    catch (Error) {
+      return res.status(500).send({ error: `Internal Server Error: ${Error}` });
+    }
+  }
+
+  static async putUnpublish(req, res) {
+    try {
+      // get user based on the token
+      const token = req.header('X-Token');
+      if (!token) return res.status(401).send({ error: 'Unauthorized' });
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) return res.status(401).send({ error: 'Unauthorized' });
+      const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(userId) });
+      if (!user) return res.status(401).send({ error: 'Unauthorized' });
+
+      // get file based on the file id and user id
+      const fileId = req.params.id;
+      const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(fileId), userId: ObjectId(user._id) });
+      if (!file) return res.status(404).send({ error: 'Not found' });
+
+      // update file to be private
+      await dbClient.db.collection('files').updateOne({ _id: ObjectId(fileId) }, { $set: { isPublic: false } });
+      return res.status(200).send({
+        id: file._id,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: false,
+        parentId: file.parentId,
+      });
+    } catch (Error) {
+      return res.status(500).send({ error: `Internal Server Error: ${Error}` });
+    }
+  }
+
+
 }
