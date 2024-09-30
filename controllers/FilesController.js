@@ -5,13 +5,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
 import { tmpdir } from 'os';
-import Queue from 'bull';
 import { createDirectory, convertFromBase64 } from '../utils/file';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 import { contentType } from 'mime-types';
 
-const fileQueue = new Queue('thumbnail generation');
 
 export default class FilesController {
   static async postUpload(req, res) {
@@ -43,7 +41,7 @@ export default class FilesController {
           userId: user._id,
           name,
           type,
-          parentId: parentId || 0,
+          parentId: parentId || "0",
           isPublic: isPublic || false,
         };
         const result = await dbClient.db.collection('files').insertOne(folder);
@@ -74,10 +72,6 @@ export default class FilesController {
         localPath: filePath,
       };
       const result = await dbClient.db.collection('files').insertOne(file);
-      if (type === 'image') {
-        const jobName = `Image thumbnail [${userId}-${result.insertedId}]`;
-        fileQueue.add({ userId, fileId: result.insertedId, name: jobName });
-      }
       return res.status(201).send({
         id: result.insertedId,
         userId: user._id,
@@ -130,17 +124,18 @@ export default class FilesController {
 
       // get files based on the user id
       const parentId = req.query.parentId || '0';
-      const { page } = req.query;
+      const page = parseInt(req.query.page, 10) || 0;
+      
       const aggregationPipeline = [
         {
           $match: {
-            userId,
+            userId: ObjectId(userId),
             parentId,
           },
-        }, // Filter documents
-        { $sort: { _id: -1 } }, // Sort documents
-        { $skip: page * 20 }, // Skip for pagination
-        { $limit: 20 }, // Limit results per page
+        },
+        { $sort: { _id: -1 } },
+        { $skip: page * 20 },
+        { $limit: 20 },
         {
           $project: {
             _id: 1,
@@ -152,8 +147,12 @@ export default class FilesController {
           },
         },
       ];
-      const files = await dbClient.db.collection('files').aggregate(aggregationPipeline).toArray().toArray();
-      return res.status(200).send({ files });
+      
+      const files = await dbClient.db.collection('files')
+        .aggregate(aggregationPipeline)
+        .toArray();
+        
+      return res.status(200).send(files);
     } catch (Error) {
       return res.status(500).send({ error: `Internal Server Error: ${Error}` });
     }
