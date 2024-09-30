@@ -1,7 +1,7 @@
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis'
 import { ObjectId } from 'mongodb';
-import { uuid } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { promises as fsPromises } from 'fs';
 import { createDirectory, convertFromBase64 } from '../utils/file';
 import path from 'path';
@@ -55,7 +55,7 @@ export default class FilesController {
 
       // write file to disk
       const buff = convertFromBase64(data)
-      const filePath = path.join(dirPath, uuid());
+      const filePath = path.join(dirPath, uuidv4());
       await fsPromises.writeFile(filePath, buff);
       const file = {
         userId: user._id,
