@@ -23,11 +23,7 @@ export default class FilesController {
       } = req.body;
       if (!name) return res.status(400).send({ error: 'Missing name' });
       if (!type || !(['folder', 'file', 'image'].includes(type))) return res.status(400).send({ error: 'Missing type' });
-<<<<<<< HEAD
       if (type !== "folder" && !data) return res.status(400).send({ error: 'Missing data' });
-=======
-      if (type != 'folder' && !data) return res.status(400).send({ error: 'Missing data' });
->>>>>>> 2d958172b878c6fef0d15d870df99f2a6d2262d4
       if (parentId) {
         const parent = await dbClient.db.collection('files').findOne({ _id: ObjectId(parentId) });
         if (!parent) return res.status(400).send({ error: 'Parent not found' });
@@ -35,11 +31,7 @@ export default class FilesController {
       }
 
       // insert folder in DB
-<<<<<<< HEAD
       if (type === "folder") {
-=======
-      if (type == 'folder') {
->>>>>>> 2d958172b878c6fef0d15d870df99f2a6d2262d4
         const folder = {
           userId: user._id,
           name,
