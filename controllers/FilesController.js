@@ -74,8 +74,8 @@ export default class FilesController {
       };
       const result = await dbClient.db.collection('files').insertOne(file);
       if (type === 'image') {
-        const jobName = `Image thumbnail [${userId}-${fileId}]`;
-        fileQueue.add({ userId, fileId, name: jobName });
+        const jobName = `Image thumbnail [${userId}-${result.insertedId}]`;
+        fileQueue.add({ userId, fileId: result.insertedId, name: jobName });
       }
       return res.status(201).send({
         id: result.insertedId,
