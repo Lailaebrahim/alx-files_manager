@@ -262,10 +262,11 @@ export default class FilesController {
 
       // Get the absolute path and set content type
       const absoluteFilePath = await fsPromises.realpath(filePath);
-      res.setHeader('Content-Type', contentType(file.name) || 'text/plain; charset=utf-8');
+      const mimeType = contentType(file.name) || 'text/plain; charset=utf-8';
+      res.setHeader('Content-Type', mimeType);
 
       // Send the file
-      return res.status(200).sendFile(absoluteFilePath);
+      return res.sendFile(absoluteFilePath);
     } catch (error) {
       console.error('Error in getFile:', error);
       return res.status(500).send({ error: 'Internal Server Error' });
