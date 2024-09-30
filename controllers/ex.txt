@@ -44,3 +44,5 @@ bob@dylan:~$ ls /tmp/files_manager/
 2a1f4fc3-687b-491a-a3d2-5808a02942c9   51997b88-5c42-42c2-901e-e7f4e71bdc47
 bob@dylan:~$
 python image_upload.py image.png 26741135-2b01-4b8f-a84b-1ba6534cb9c5 66fabae35c18c703a17e9002
+
+ curl -XPOST 0.0.0.0:5000/files -H "X-Token: 26741135-2b01-4b8f-a84b-1ba6534cb9c5" -H "Content-Type: application/json" -d '{ "name": "lili.txt", "type": "file", "data": "SGVsbG8gV2Vic3RhY2shCg==" }' ; echo ""

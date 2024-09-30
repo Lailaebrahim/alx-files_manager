@@ -52,7 +52,7 @@ export default class FilesController {
       }
 
       // create directory if not exist
-      const dirPath = path.join(tmpdir(), process.env.FOLDER_PATH || '/tmp/files_manager');
+      const dirPath = path.join(tmpdir(), process.env.FOLDER_PATH || '/files_manager');
       await createDirectory(dirPath);
 
       // write file to disk
