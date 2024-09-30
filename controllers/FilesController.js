@@ -219,5 +219,35 @@ export default class FilesController {
     }
   }
 
+  static async getFile(req, res) {
+    try {
+      const fileId = req.params.id;
+      const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(fileId) });
+      if (!file) return res.status(404).send({ error: 'Not found' });
+      if (file.type === "folder") return res.status(400).send({ error: "A folder doesn't have content" });
+      if (file.isPublic) {
+        return res.status(200).send({ id: file._id, userId: file.userId, name: file.name, type: file.type, isPublic: file.isPublic, parentId: file.parentId });
+      }
+      else {
+        if (file.userId === req.user._id) { return res.status(200).send({ id: file._id, userId: file.userId, name: file.name, type: file.type, isPublic: file.isPublic, parentId: file.parentId }); }
+        else {
+          // get user based on the token
+          const token = req.header('X-Token');
+          if (!token) return res.status(403).send({ error: 'Forbidden' });
+          const userId = await redisClient.get(`auth_${token}`);
+          if (!userId) return res.status(403).send({ error: 'Forbidden' });
+          const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(userId) });
+          if (!user) return res.status(403).send({ error: 'Forbidden' });
+          if (file.userId !== user._id) return res.status(403).send({ error: 'Forbidden' });
+          return res.status(200).send({ id: file._id, userId: file.userId, name: file.name, type: file.type, isPublic: file.isPublic, parentId: file.parentId });
+        }
+      }
+
+    }
+    catch (Error) {
+      return res.status(500).send({ error: `Internal Server Error: ${Error}` });
+    }
+  }
+
 
 }
