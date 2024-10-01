@@ -11,6 +11,8 @@ import dbClient from '../utils/db';
 import { contentType } from 'mime-types';
 
 
+const fileQueue = new Queue('thumbnail generation');
+
 export default class FilesController {
   static async postUpload(req, res) {
     try {
@@ -72,6 +74,10 @@ export default class FilesController {
         localPath: filePath,
       };
       const result = await dbClient.db.collection('files').insertOne(file);
+      if (file.type === "image") {
+        const jobName = `Image thumbnail [${userId}-${fileId}]`;
+        fileQueue.add({ userId, fileId, name: jobName });
+      }
       return res.status(201).send({
         id: result.insertedId,
         userId: user._id,
