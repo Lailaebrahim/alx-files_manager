@@ -5,11 +5,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
 import { tmpdir } from 'os';
+import { contentType } from 'mime-types';
 import { createDirectory, convertFromBase64 } from '../utils/file';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
-import { contentType } from 'mime-types';
-
 
 const fileQueue = new Queue('thumbnail generation');
 
@@ -43,7 +42,7 @@ export default class FilesController {
           userId: user._id,
           name,
           type,
-          parentId: parentId || "0",
+          parentId: parentId || '0',
           isPublic: isPublic || false,
         };
         const result = await dbClient.db.collection('files').insertOne(folder);
@@ -74,7 +73,7 @@ export default class FilesController {
         localPath: filePath,
       };
       const result = await dbClient.db.collection('files').insertOne(file);
-      if (file.type === "image") {
+      if (file.type === 'image') {
         const jobName = `Image thumbnail [${userId}-${fileId}]`;
         fileQueue.add({ userId, fileId, name: jobName });
       }
@@ -131,7 +130,7 @@ export default class FilesController {
       // get files based on the user id
       const parentId = req.query.parentId || '0';
       const page = parseInt(req.query.page, 10) || 0;
-      
+
       const aggregationPipeline = [
         {
           $match: {
@@ -153,11 +152,11 @@ export default class FilesController {
           },
         },
       ];
-      
+
       const files = await dbClient.db.collection('files')
         .aggregate(aggregationPipeline)
         .toArray();
-        
+
       return res.status(200).send(files);
     } catch (Error) {
       return res.status(500).send({ error: `Internal Server Error: ${Error}` });
@@ -189,8 +188,7 @@ export default class FilesController {
         isPublic: true,
         parentId: file.parentId,
       });
-    }
-    catch (Error) {
+    } catch (Error) {
       return res.status(500).send({ error: `Internal Server Error: ${Error}` });
     }
   }
@@ -235,7 +233,7 @@ export default class FilesController {
       if (!file) return res.status(404).send({ error: 'Not found' });
 
       // Check if the file is a folder
-      if (file.type === "folder") {
+      if (file.type === 'folder') {
         return res.status(400).send({ error: "A folder doesn't have content" });
       }
 
