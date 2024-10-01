@@ -1,16 +1,16 @@
 /* eslint-disable import/no-named-as-default */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-import redisClient from '../utils/redis';
-import dbClient from '../utils/db';
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
 import { tmpdir } from 'os';
 import { contentType } from 'mime-types';
-import { createDirectory, convertFromBase64 } from '../utils/file';
 import Queue from 'bull';
+import { createDirectory, convertFromBase64 } from '../utils/file';
+import dbClient from '../utils/db';
+import redisClient from '../utils/redis';
 
 const fileQueue = new Queue('thumbnail generation');
 
