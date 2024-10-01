@@ -1,13 +1,16 @@
+import dbClient from './utils/db';
 import Queue from 'bull';
 import imgThumbnail from 'image-thumbnail';
-import dbClient from '../utils/db';
+import fs from 'fs';
+import { ObjectId } from 'mongodb';
+
 
 const fileQueue = new Queue('thumbnail generation');
 
 const generateThumbnail = async (filePath, size) => {
   const buffer = await imgThumbnail(filePath, { width: size });
   console.log(`Generating file: ${filePath}, size: ${size}`);
-  return writeFileAsync(`${filePath}_${size}`, buffer);
+  return fs.writeFileAsync(`${filePath}_${size}`, buffer);
 };
 
 fileQueue.process(async (job, done) => {
