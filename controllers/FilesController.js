@@ -1,5 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 /* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 import { ObjectId } from 'mongodb';
