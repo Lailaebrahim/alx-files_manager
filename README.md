@@ -4,16 +4,11 @@
 
 ### Async Programming in Node.js
 
-- **Single-threaded Nature**: JavaScript programs are single-threaded, meaning they can only execute one task at a time. If a long-running synchronous call is made, it blocks the main thread, preventing other tasks from executing.
-
+- **Single-threaded Nature**: JavaScript programs are single-threaded, meaning they can only execute one task at a time. If a long-running synchronous call is made, it blocks the main thread, preventing other operations.
 - **Node.js and libuv**: Node.js is built on the V8 JavaScript engine and the libuv library. libuv is multi-threaded and allows Node.js to perform I/O operations asynchronously.
-
-- **Event Loop**: The event loop, provided by libuv, continuously checks for and processes events like I/O operations, timers, and callbacks. This enables Node.js to handle multiple operations concurrently without blocking the main thread.
-
-- **Thread Pool**: libuv uses a thread pool for expensive or blocking operations, such as file system operations. These operations are offloaded to separate threads, and their results are passed back to the event loop for callback invocation.
-
-- **Callbacks**: Callbacks are functions passed into other functions to be executed once an operation is complete. They prevent blocking the main thread. However, nested callbacks can lead to "callback hell," which is mitigated by using promises.
-
+- **Event Loop**: The event loop, provided by libuv, continuously checks for and processes events like I/O operations, timers, and callbacks. This enables Node.js to handle multiple operations concurrently.
+- **Thread Pool**: libuv uses a thread pool for expensive or blocking operations, such as file system operations. These operations are offloaded to separate threads, and their results are passed back to the main thread.
+- **Callbacks**: Callbacks are functions passed into other functions to be executed once an operation is complete. They prevent blocking the main thread. However, nested callbacks can lead to "callback hell".
 - **Microtask vs. Macrotask Queues**:
     - **Microtask Queue**: Used for asynchronous operations triggered by the event loop, such as promises.
     - **Macrotask Queue**: Used for operations like `setTimeout`, `setInterval`, `setImmediate`, `process.nextTick`, and I/O operations.
@@ -82,3 +77,89 @@
     - **BSON**: Works with MongoDB's binary data format.
 - **ODMs**: Higher-level Object Document Mappers like Mongoose provide additional features like schema validation and middleware.
 
+---
+
+## Project Documentation: Files Manager API
+
+### Overview
+
+The **alx-files_manager** project is a RESTful File Manager API built primarily with Node.js (JavaScript) and some Python. It enables users to upload, retrieve, share, and manage files securely and efficiently. It demonstrates concepts from asynchronous programming, caching, and NoSQL databases.
+
+### Features
+
+- **User Authentication:** token-based authentication.
+- **File Upload:** Upload files and folders with metadata.
+- **File Retrieval:** Download, preview, or list files and folders.
+- **File Sharing:** Publish or unpublish files for public access.
+- **Folder Hierarchy:** Organize files into folders and subfolders.
+- **Database Integration:** Uses MongoDB for storing metadata and Redis for caching.
+- **Efficient Performance:** Asynchronous, non-blocking request handling.
+
+### API Endpoints
+
+#### Authentication
+
+- **Sign Up:** `POST /users`
+    - Body: `{ "email": "user@example.com", "password": "yourpassword" }`
+    - Response: User details (excludes password)
+- **Sign In:** `GET /connect` (Basic Auth header)
+    - Response: `{ "token": "<auth_token>" }`
+- **Sign Out:** `GET /disconnect` (Header: `X-Token`)
+
+#### Files
+
+- **Upload File:** `POST /files`
+    - Headers: `X-Token`
+    - Body: `{ "name": "filename.txt", "type": "file|folder|image", "data": "<base64data>", "parentId": "<optional>" }`
+    - Response: Metadata of uploaded file
+- **List Files:** `GET /files?parentId=<optional>&page=<optional>`
+    - Headers: `X-Token`
+    - Response: Array of file metadata
+- **Get File Info:** `GET /files/:id`
+    - Headers: `X-Token`
+    - Response: Metadata of the file
+- **Publish/Unpublish File:** `PUT /files/:id/publish` or `PUT /files/:id/unpublish`
+    - Headers: `X-Token`
+    - Response: Updated file metadata
+- **Get File Content:** `GET /files/:id/data`
+    - If file is published, no token required. Otherwise, add `X-Token` header.
+    - Response: Raw file data (download or preview)
+
+#### User
+
+- **Get User Info:** `GET /users/me`
+    - Headers: `X-Token`
+    - Response: `{ "email": "user@example.com", "id": "<user_id>" }`
+
+### Project Structure
+
+```
+alx-files_manager/
+├── controllers/         # API endpoint logic
+├── routes/              # Express route definitions
+├── utils/               # Utility functions
+├── models/              # Database models
+├── server.js            # Application entry point
+├── README.md            # Documentation
+├── tests/               # Automated tests
+```
+
+### Getting Started
+
+1. **Install Dependencies:**
+   ```sh
+   npm install
+   ```
+2. **Set up environment variables:**  
+   Create a `.env` file for database and server configuration.
+3. **Run the API server:**
+   ```sh
+   npm start
+   ```
+4. **API is available at** `http://localhost:5000/`.
+
+### License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
